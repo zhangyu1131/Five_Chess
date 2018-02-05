@@ -25,10 +25,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+    netsetupdialog.cpp
 
 HEADERS += \
-        mainwindow.h
+        mainwindow.h \
+    inc/connectdata.h \
+    netsetupdialog.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    netsetupdialog.ui
