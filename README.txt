@@ -1,1 +1,1 @@
-Develop a simple Five-Chess game using socket communication by QT.
+Develop a simple Five-Chess game using socket communication by C++&QT.
