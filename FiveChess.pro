@@ -44,3 +44,8 @@ FORMS += \
 QT += network
 
 CONFIG += C++11
+
+DISTFILES +=
+
+RESOURCES += \
+    res.qrc

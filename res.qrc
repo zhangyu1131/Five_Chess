@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/new/bgcolor">
+        <file>res/Black.bmp</file>
+        <file>res/Table.bmp</file>
+        <file>res/White.bmp</file>
+    </qresource>
+</RCC>

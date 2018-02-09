@@ -5,6 +5,7 @@
 #include<QtNetwork>
 #include<QAbstractSocket>
 
+
 class myTCPClient: public QTcpSocket
 {
 public:
@@ -12,6 +13,7 @@ public:
     ~myTCPClient(){}
     //QString getHostName();
     //quint16 getPort();
+    QString getMsg(){return msg;}
 public slots:
    void newConnect();
    //void myClose();

@@ -1,4 +1,5 @@
 #include"mytcpclient.h"
+#include <QMessageBox>
 
 myTCPClient::myTCPClient(QObject *parent)
 {
@@ -34,9 +35,11 @@ void myTCPClient::readMessage()
         return;
     in>>msg;
     qDebug()<<"The client has received the msg: "+msg;
+    QMessageBox::information(NULL, "client", msg);
 }
 
 void myTCPClient::displayError(QAbstractSocket::SocketError)
 {
     qDebug()<<this->errorString();
+    QMessageBox::information(NULL, "client", this->errorString());
 }

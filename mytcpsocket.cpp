@@ -3,6 +3,7 @@
 #include <QString>
 #include <QDebug>
 #include <QObject>
+#include<QMessageBox>
 
 myTCPSocket::myTCPSocket(QObject *parent):QTcpServer(parent)
 {
@@ -27,4 +28,5 @@ void myTCPSocket::sendMessage()
     clientConnection->disconnectFromHost();
 
     qDebug()<<"The server send message sucessfully.";
+    QMessageBox::information(NULL, "server", "send over");
 }

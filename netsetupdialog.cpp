@@ -1,6 +1,7 @@
 #include "netsetupdialog.h"
 #include "ui_netsetupdialog.h"
 #include<QDebug>
+#include<QMessageBox>
 
 NetSetupDialog::NetSetupDialog(QWidget *parent) :
     QDialog(parent),
@@ -53,10 +54,7 @@ void NetSetupDialog::on_OK_clicked()
         connect(tcpclient,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(displayError(QAbstractSocket::SocketError)));
         //发起连接
         tcpclient->newConnect();
-
     }
-
-
 }
 //取消响应函数
 void NetSetupDialog::on_CANCEL_clicked()
