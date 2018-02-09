@@ -26,13 +26,21 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    netsetupdialog.cpp
+    netsetupdialog.cpp \
+    mytcpsocket.cpp \
+    mytcpclient.cpp
 
 HEADERS += \
         mainwindow.h \
     inc/connectdata.h \
-    netsetupdialog.h
+    netsetupdialog.h \
+    mytcpsocket.h \
+    mytcpclient.h
 
 FORMS += \
         mainwindow.ui \
     netsetupdialog.ui
+
+QT += network
+
+CONFIG += C++11

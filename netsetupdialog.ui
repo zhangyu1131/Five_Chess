@@ -36,12 +36,22 @@
          </widget>
         </item>
         <item row="1" column="1" colspan="2">
-         <widget class="QLineEdit" name="IP_ADDRESS_EDIT"/>
+         <widget class="QLineEdit" name="IP_ADDRESS_EDIT">
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
         </item>
         <item row="0" column="0" colspan="2">
          <widget class="QRadioButton" name="HOST_OPTION">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
           <property name="text">
            <string>主机（黑）</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -53,7 +63,14 @@
          </widget>
         </item>
         <item row="2" column="1" colspan="2">
-         <widget class="QLineEdit" name="NET_PORT_EDIT"/>
+         <widget class="QLineEdit" name="NET_PORT_EDIT">
+          <property name="cursor">
+           <cursorShape>IBeamCursor</cursorShape>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
         </item>
         <item row="0" column="2">
          <widget class="QRadioButton" name="CLIENT_OPTION">
