@@ -28,14 +28,16 @@ SOURCES += \
         mainwindow.cpp \
     netsetupdialog.cpp \
     mytcpsocket.cpp \
-    mytcpclient.cpp
+    mytcpclient.cpp \
+    gamestate.cpp
 
 HEADERS += \
         mainwindow.h \
     inc/connectdata.h \
     netsetupdialog.h \
     mytcpsocket.h \
-    mytcpclient.h
+    mytcpclient.h \
+    gamestate.h
 
 FORMS += \
         mainwindow.ui \

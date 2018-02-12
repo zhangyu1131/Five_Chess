@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>900</width>
-    <height>800</height>
+    <height>831</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,10 +16,26 @@
   <property name="autoFillBackground">
    <bool>true</bool>
   </property>
-  <property name="styleSheet">
-   <string notr="true">background-image: url(:/new/bgcolor/res/Table.bmp);</string>
-  </property>
-  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QFrame" name="frame">
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">border-image: url(:/new/bgcolor/res/Table.bmp);</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
@@ -29,11 +45,21 @@
      <height>17</height>
     </rect>
    </property>
+   <property name="autoFillBackground">
+    <bool>false</bool>
+   </property>
    <widget class="QMenu" name="menu">
     <property name="title">
      <string>操作</string>
     </property>
-    <addaction name="NEW_GAME_MENU"/>
+    <widget class="QMenu" name="menu_2">
+     <property name="title">
+      <string>新游戏</string>
+     </property>
+     <addaction name="actionPVP"/>
+     <addaction name="actionpve"/>
+    </widget>
+    <addaction name="menu_2"/>
     <addaction name="DRAW_GAME_MENU"/>
     <addaction name="EXIT_GAME_MENU"/>
    </widget>
@@ -48,11 +74,6 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="NEW_GAME_MENU">
-   <property name="text">
-    <string>新游戏</string>
-   </property>
-  </action>
   <action name="DRAW_GAME_MENU">
    <property name="text">
     <string>和棋</string>
@@ -61,6 +82,16 @@
   <action name="EXIT_GAME_MENU">
    <property name="text">
     <string>退出游戏</string>
+   </property>
+  </action>
+  <action name="actionPVP">
+   <property name="text">
+    <string>PVP</string>
+   </property>
+  </action>
+  <action name="actionpve">
+   <property name="text">
+    <string>PVE</string>
    </property>
   </action>
  </widget>

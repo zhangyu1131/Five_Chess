@@ -59,7 +59,7 @@ void NetSetupDialog::on_OK_clicked()
 //取消响应函数
 void NetSetupDialog::on_CANCEL_clicked()
 {
-
+    this->close();
 }
 //单选框响应函数
 void NetSetupDialog::on_HOSTORCLIENT_clicked()
