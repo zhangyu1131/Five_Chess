@@ -4,13 +4,22 @@
 #include <QMouseEvent>
 #include <QPainter>
 
+const int kBoardMargin = 30; // 棋盘边缘空隙
+const int kRadius = 15; // 棋子半径
+const int kMarkSize = 6; // 落子标记边长
+const int kBlockSize = 40; // 格子的大小
+const int kPosDelta = 20; // 鼠标点击的模糊距离上限
+
+const int kAIDelay = 700; // AI下棋的思考时间
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    setFixedSize(kBoardMargin * 2 + kBlockSize * 14, kBoardMargin * 3 + kBlockSize * 14);
     ui->setupUi(this);
     setMouseTracking(true);//开启跟踪鼠标
+
     game=new GameState();
 }
 
@@ -72,19 +81,25 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 void MainWindow::paintEvent(QPaintEvent *event)
 {
     qDebug()<<"in paintEvent";
+
     QPainter painter(this);
-
-
     // 绘制棋盘
     painter.setRenderHint(QPainter::Antialiasing, true); // 抗锯齿
 
-    QBrush brush;
+    for (int i = 0; i < 15; i++)
+    {
+        painter.drawLine(kBoardMargin,2*kBoardMargin+kBlockSize*i,size().width()-kBoardMargin,2*kBoardMargin+kBlockSize*i);
+        painter.drawLine(kBoardMargin+kBlockSize*i,2*kBoardMargin,kBoardMargin+kBlockSize*i,size().height()-kBoardMargin);
+        //painter.drawLine(kBoardMargin + kBlockSize * i, kBoardMargin, kBoardMargin + kBlockSize * i, size().height() - kBoardMargin);
+        //painter.drawLine(kBoardMargin, kBoardMargin + kBlockSize * i, size().width() - kBoardMargin, kBoardMargin + kBlockSize * i);
+    }
+    /*QBrush brush;
     brush.setStyle(Qt::SolidPattern);
     brush.setColor(Qt::white);
     painter.setBrush(brush);
-    painter.drawEllipse(12,12,150,150);
+    painter.drawEllipse(12,12,150,150);*/
 
-    QPixmap  image("\res\Black.bmp");
+
     // 绘制棋子
     for (int i = 0; i < 15; i++)
         for (int j = 0; j < 15; j++)
@@ -94,9 +109,6 @@ void MainWindow::paintEvent(QPaintEvent *event)
                 int x=(i*46.42857)+50;
                 int y=(j*40.35714)+200;
                 QPoint point(x,y);
-                qDebug()<<"ddd";
-                painter.drawPixmap(point,image);
-                qDebug()<<"fffr";
             }
             /*else if (game->gameMapVec[i][j] == -1)
             {
