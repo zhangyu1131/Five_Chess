@@ -3,7 +3,8 @@
 
 #include <QMainWindow>
 #include "netsetupdialog.h"
-#include"gamestate.h"
+#include "gamestate.h"
+#include<vector>
 
 namespace Ui {
 class MainWindow;
@@ -19,7 +20,9 @@ public:
 
 protected:
     // 监听鼠标移动情况，方便落子
-    void mousePressEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent* event);
+    //监听鼠标移动
+    void mouseMoveEvent(QMouseEvent * event);
     //绘制
     void paintEvent(QPaintEvent *event);
 
@@ -29,15 +32,25 @@ private slots:
 
     void on_EXIT_GAME_MENU_triggered();
 
-    void on_actionPVP_triggered();
+    //三种模式的游戏初始化E
+    void initPVPGame();
+    void initPVPOnlineGame();
+    void initPVEGame();
+
+private:
+    void ConstructMenu();
 
 private:
     Ui::MainWindow *ui;
     NetSetupDialog* netsetupdialog;
-    //存储鼠标点击位置
+    //存储鼠标落子位置
     QPoint chessPoint;
+    //存储星位天元标记
+    std::vector<QPoint> Tianyuan;
     //游戏状态对象
     GameState *game;
+    //游戏模式
+    GameModel game_model;
 };
 
 #endif // MAINWINDOW_H

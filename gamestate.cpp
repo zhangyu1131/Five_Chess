@@ -1,4 +1,6 @@
 #include"gamestate.h"
+#include<qDebug>
+
 
 GameState::GameState()
 {
@@ -10,4 +12,12 @@ GameState::GameState()
             lineBoard.push_back(0);
         gameMapVec.push_back(lineBoard);
     }
+    qDebug()<<"gameState inited";
+}
+
+void GameState::StartGame()
+{
+    gameStatus=PLAYING;
+    playerFlag=true;
+    qDebug()<<"start game!";
 }
