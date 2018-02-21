@@ -5,7 +5,7 @@
 #include <QPainter>
 #include<vector>
 #include"gamestate.h"
-
+#include<QMessageBox>
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -94,7 +94,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
         y=60;
     if(y>620)
         y=620;
-
+    //调整i,j，使i和j在0到15范围内，即落在棋盘内
     int i=(int)((x-30)/40.0+0.5);
     int j=(int)((y-60)/40.0+0.5);
     qDebug()<<i<<" "<<j;
@@ -108,12 +108,12 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 {
     if(game->playerFlag&&game->gameMapVec[chessPoint.x()][chessPoint.y()]==0)
     {
-        game->gameMapVec[chessPoint.x()][chessPoint.y()]=1;
+        game->gameMapVec[chessPoint.x()][chessPoint.y()]=1;//黑棋
         game->playerFlag=!game->playerFlag;
     }
     else if(!game->playerFlag&&game->gameMapVec[chessPoint.x()][chessPoint.y()]==0)
     {
-        game->gameMapVec[chessPoint.x()][chessPoint.y()]=-1;
+        game->gameMapVec[chessPoint.x()][chessPoint.y()]=-1;//白棋
         game->playerFlag=!game->playerFlag;
     }
     update();
@@ -143,7 +143,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
     // 绘制落子标记(防止鼠标出框越界)
     if (chessPoint.y() >= 0 && chessPoint.y() < 15 &&
         chessPoint.x() >= 0 && chessPoint.x() < 15 &&
-        game->gameMapVec[chessPoint.y()][chessPoint.x()]==0)
+        game->gameMapVec[chessPoint.x()][chessPoint.y()]==0)
     {
         if (game->playerFlag)
             brush.setColor(Qt::black);
@@ -171,6 +171,30 @@ void MainWindow::paintEvent(QPaintEvent *event)
                 painter.drawEllipse(kBoardMargin + kBlockSize * i-kRadius, 2*kBoardMargin + kBlockSize * j - kRadius,2*kRadius,2*kRadius);
             }
         }
+
+    //判断输赢
+    if(game->gameMapVec[chessPoint.x()][chessPoint.y()]==1||game->gameMapVec[chessPoint.x()][chessPoint.y()]==-1)
+    {
+        qDebug()<<"in judge";
+        if(game->isWin(chessPoint.x(),chessPoint.y())&& game->gameStatus == PLAYING)
+        {
+            game->gameStatus=END;//结束
+            QString str="";
+            if(game->gameMapVec[chessPoint.x()][chessPoint.y()]==1)
+                str="black";
+            else if(game->gameMapVec[chessPoint.x()][chessPoint.y()]==-1)
+                str="white";
+
+            QMessageBox::StandardButton btnValue = QMessageBox::information(this, "congratulations", str + " win!");
+
+            // 重置游戏状态，否则容易死循环
+            if (btnValue == QMessageBox::Ok)
+            {
+                 initPVPGame();
+            }
+        }
+    }
+
 }
 
 
