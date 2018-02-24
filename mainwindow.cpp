@@ -5,6 +5,7 @@
 #include <QPainter>
 #include<vector>
 #include"gamestate.h"
+#include <QTimer>
 #include<QMessageBox>
 
 
@@ -82,7 +83,7 @@ void MainWindow::on_EXIT_GAME_MENU_triggered()
 //鼠标响应
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
 {
-    qDebug()<<"in mouse move";
+    //qDebug()<<"in mouse move";
     int x=event->x();
     int y=event->y();
     //调整坐标，格子边长是40
@@ -97,7 +98,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
     //调整i,j，使i和j在0到15范围内，即落在棋盘内
     int i=(int)((x-30)/40.0+0.5);
     int j=(int)((y-60)/40.0+0.5);
-    qDebug()<<i<<" "<<j;
+    //qDebug()<<i<<" "<<j;
     chessPoint.setX(i);
     chessPoint.setY(j);
     update();
@@ -106,15 +107,17 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 {
-    if(game->playerFlag&&game->gameMapVec[chessPoint.x()][chessPoint.y()]==0)
+    if(game->gameModel==PVP)
     {
-        game->gameMapVec[chessPoint.x()][chessPoint.y()]=1;//黑棋
-        game->playerFlag=!game->playerFlag;
+        chessByPerson();
+        chessByPerson();
     }
-    else if(!game->playerFlag&&game->gameMapVec[chessPoint.x()][chessPoint.y()]==0)
+    if(game->gameModel==PVE)
     {
-        game->gameMapVec[chessPoint.x()][chessPoint.y()]=-1;//白棋
-        game->playerFlag=!game->playerFlag;
+        if(game->playerFlag)
+            chessByPerson();
+        if(!game->isWin(chessPoint.x(),chessPoint.y()))
+            QTimer::singleShot(700, this, SLOT(chessByAI()));
     }
     update();
 }
@@ -122,7 +125,7 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 //绘制界面函数
 void MainWindow::paintEvent(QPaintEvent *event)
 {
-    qDebug()<<"in paintEvent";
+   // qDebug()<<"in paintEvent";
 
     QPainter painter(this);
     // 绘制棋盘和星位天元
@@ -175,7 +178,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
     //判断输赢
     if(game->gameMapVec[chessPoint.x()][chessPoint.y()]==1||game->gameMapVec[chessPoint.x()][chessPoint.y()]==-1)
     {
-        qDebug()<<"in judge";
+        //qDebug()<<"in judge";
         if(game->isWin(chessPoint.x(),chessPoint.y())&& game->gameStatus == PLAYING)
         {
             game->gameStatus=END;//结束
@@ -190,13 +193,36 @@ void MainWindow::paintEvent(QPaintEvent *event)
             // 重置游戏状态，否则容易死循环
             if (btnValue == QMessageBox::Ok)
             {
-                 initPVPGame();
+                if(game->gameModel==PVP)
+                    initPVPGame();
+                else if(game->gameModel==PVE)
+                    initPVEGame();
             }
         }
     }
 
 }
 
+void MainWindow::chessByPerson()
+{
+    if(game->playerFlag&&game->gameMapVec[chessPoint.x()][chessPoint.y()]==0)
+    {
+        game->gameMapVec[chessPoint.x()][chessPoint.y()]=1;//黑棋
+        game->playerFlag=!game->playerFlag;
+    }
+    else if(!game->playerFlag&&game->gameMapVec[chessPoint.x()][chessPoint.y()]==0)
+    {
+        game->gameMapVec[chessPoint.x()][chessPoint.y()]=-1;//白棋
+        game->playerFlag=!game->playerFlag;
+    }
+    update();
+}
+
+void MainWindow::chessByAI()
+{
+    chessPoint=game->putChess(chessPoint);
+    update();
+}
 
 //私有实现函数
 void MainWindow::ConstructMenu()

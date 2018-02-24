@@ -1,6 +1,7 @@
 #include"gamestate.h"
 #include<qDebug>
-
+#include<random>
+#include<time.h>
 
 GameState::GameState()
 {
@@ -28,13 +29,14 @@ void GameState::StartGame()
     qDebug()<<"start game!";
    if(gameModel==PVE)//如果是PVE模式，则需要初始化评分数组
    {
-       scoreMapVec.clear();
+       qDebug()<<"gameModel is pve.";
+       scoreMap.clear();
        for (int i = 0; i < 15; i++)
        {
              std::vector<int> lineScores;
              for (int j = 0; j < 15; j++)
                     lineScores.push_back(0);
-             scoreMapVec.push_back(lineScores);
+             scoreMap.push_back(lineScores);
        }
    }
 }
@@ -123,7 +125,39 @@ bool GameState::isWin(int x, int y)
 
 }
 
-//计算每个点评分，用于电脑下期
+
+QPoint GameState::putChess(QPoint point)
+{
+    if(!playerFlag)//playerFlag为false表示电脑下棋
+    {
+        calculateScore();
+        int minD=INT_MAX;
+        std::vector<QPoint> minp;
+        qDebug()<<maxPoints.size();
+        for(int i=0;i<maxPoints.size();i++)
+        {
+            int distance=(maxPoints[i].x()-point.x())*(maxPoints[i].x()-point.x())+(maxPoints[i].y()-point.y())*(maxPoints[i].y()-point.y());
+            if(distance<minD)
+            {
+                minp.clear();
+                minD=distance;
+                minp.push_back(maxPoints[i]);
+            }
+            else if(distance==minD)
+                minp.push_back(maxPoints[i]);
+        }
+        //当存在多个评分一样的点时，随机选择一个
+        srand(time(0));
+        int index=(int)(rand()%minp.size());
+        gameMapVec[minp[index].x()][minp[index].y()]=-1;//白棋
+        for(int j=0;j<minp.size();j++)
+            qDebug()<<"max point: "<<minp[j].x()<<" "<<minp[j].y()<<"size: "<<minp.size();
+        playerFlag=!playerFlag;
+        return minp[index];
+    }
+}
+
+//计算每个点评分，用于电脑下棋
 void GameState::calculateScore()
 {
     //先全部置0
@@ -131,53 +165,243 @@ void GameState::calculateScore()
     for (int i = 0; i < 15; i++)
     {
         for (int j = 0; j < 15; j++)
-            scoreMapVec[i][j]=0;
+        {
+            scoreMap[i][j]=0;
+        }
     }
     maxPoints.clear();
+
+    //对局势进行评判
     int maxScore=0;
     for(int i=0;i<15;i++)
     {
         for(int j=0;j<15;j++)
         {
-            scoreMapVec[i][j]+=calculateRowScore(i,j);//横
-            scoreMapVec[i][j]+=calculateColScore(i,j);//纵
-            scoreMapVec[i][j]+=calculateMainDiagonalScore(i,j);//主对角线
-            scoreMapVec[i][j]+=calculateViceDiagonalScore(i,j);//副对角线
-            if(scoreMapVec[i][j]>maxScore)
+            if(gameMapVec[i][j]==0)
             {
-                maxPoints.clear();
-                maxPoints.push_back(QPoint(i,j));
+                scoreMap[i][j]+=calculateRowScore(i,j);//横
+                scoreMap[i][j]+=calculateColScore(i,j);//纵
+                scoreMap[i][j]+=calculateMainDiagonalScore(i,j);//主对角线
+                scoreMap[i][j]+=calculateViceDiagonalScore(i,j);//副对角线
+                if(scoreMap[i][j]>maxScore)
+                {
+                    maxScore=scoreMap[i][j];
+                    maxPoints.clear();
+                    maxPoints.push_back(QPoint(i,j));
+                }
+                else if(scoreMap[i][j]==maxScore)
+                    maxPoints.push_back(QPoint(i,j));
             }
-            else if(scoreMapVec[i][j]==maxScore)
-                maxPoints.push_back(QPoint(i,j));
         }
+    }
+}
+
+
+void GameState::accumulate(int i, int j, int blackNum, int whiteNum, int emptyNum,int &score)
+{
+    //pve中的分值数组，从前往后依次是死一，活一，死二，活二，死三……五连。
+    //const std::vector<int> Scores={4,20,90,400,800,6000,10000,20000,50000};
+    if(i<=5||j<=5)//死
+    {
+        if(blackNum==0) score+=2;//死一
+        else if(blackNum==1)
+            score+=60;//死二
+        else if(blackNum==2)
+            score+=500;//死三
+        else if(blackNum==3)
+            score+=8000;//死四
+        else if(blackNum>=4)
+            score+=40000;//五连
+
+        if(whiteNum==0) score+=4;//死一
+        else if(whiteNum==1)
+            score+=90;//死二
+        else if(whiteNum==2)
+            score+=800;//死三
+        else if(whiteNum==3)
+            score+=10000;//死四
+        else if(whiteNum>=4)
+            score+=50000;//五连
+    }
+    else//活
+    {
+        if(blackNum==0) score+=10;//活一
+        else if(blackNum==1) score+=200;//活二
+        else if(blackNum==2) score+=2000;//活三
+        else if(blackNum==3) score+=16000;//活四
+        else if(blackNum>=4) score+=40000;//五连
+
+        if(whiteNum==0) score+=20;//活一
+        else if(whiteNum==1) score+=400;//活二
+        else if(whiteNum==2) score+=6000;//活三
+        else if(whiteNum==3) score+=20000;//活四
+        else if(whiteNum>=4) score+=50000;//五连
     }
 }
 //计算横向得分
 int GameState::calculateRowScore(int x, int y)
 {
     int score=0;
-    int i=0;
-    for(i=1;i<=4;i++)
+    int whiteNum=0,blackNum=0,emptyNum=0;
+    int i=0,j=0;
+    int colorLeft=0,colorRight=0;//棋色
+    for(i=1;i<=5;i++)//先往左检查
     {
-        if(x-i<0||gameMapVec[x-i][y]!=-1)
+        if(x-i<0)
             break;
+        //首先将该点左侧的棋子颜色存入color
+        if(colorLeft==0)
+            colorLeft=gameMapVec[x-i][y];
+        if(colorLeft!=0&&(colorLeft+gameMapVec[x-i][y]==0))//若颜色不为空，且与当前检查棋子颜色不同，说明出现了阻拦，再往左已经没有意义
+            break;
+        if(gameMapVec[x-i][y]==-1)//白
+            whiteNum++;
+        else if(gameMapVec[x-i][y]==1)//黑
+            blackNum++;
+        else
+            emptyNum++;
+    }
+    //往右检查
+    for(j=1;j<=5;j++)
+    {
+        if(x+j>14)
+            break;
+        //首先将该点右侧的棋子颜色存入color
+        if(colorRight==0)
+            colorRight=gameMapVec[x+j][y];
+        if(colorRight!=0&&(colorRight+gameMapVec[x+j][y]==0))//若颜色不为空，且与当前检查棋子颜色不同，说明出现了阻拦，再往左已经没有意义
+            break;
+        if(gameMapVec[x+j][y]==-1)//白
+            whiteNum++;
+        else if(gameMapVec[x+j][y]==1)//黑
+            blackNum++;
+        else
+            emptyNum++;
     }
 
+    accumulate(i,j,blackNum,whiteNum,emptyNum,score);
     return score;
 }
 //计算纵向得分
 int GameState::calculateColScore(int x, int y)
 {
-    return 0;
+    int score=0;
+    int whiteNum=0,blackNum=0,emptyNum=0;
+    int i=0,j=0;
+    int colorLeft=0,colorRight=0;//棋色
+    for(i=1;i<=5;i++)
+    {
+        if(y-i<0)
+            break;
+        if(colorLeft==0)
+            colorLeft=gameMapVec[x][y-i];
+        if(colorLeft!=0&&(colorLeft+gameMapVec[x][y-i]==0))
+            break;
+        if(gameMapVec[x][y-i]==-1)//白
+            whiteNum++;
+        else if(gameMapVec[x][y-i]==1)//黑
+            blackNum++;
+        else
+            emptyNum++;
+    }
+    for(j=1;j<=5;j++)
+    {
+        if(y+j>14)
+            break;
+        if(colorRight==0)
+            colorRight=gameMapVec[x][y+j];
+        if(colorRight!=0&&(colorRight+gameMapVec[x][y+j]==0))
+            break;
+        if(gameMapVec[x][y+j]==-1)//白
+            whiteNum++;
+        else if(gameMapVec[x][y+j]==1)//黑
+            blackNum++;
+        else
+            emptyNum++;
+    }
+
+    accumulate(i,j,blackNum,whiteNum,emptyNum,score);
+    return score;
 }
 //计算主对角线方向得分
 int GameState::calculateMainDiagonalScore(int x, int y)
 {
-    return 0;
+    int score=0;
+    int whiteNum=0,blackNum=0,emptyNum=0;
+    int i=0,j=0;
+    int colorLeft=0,colorRight=0;//棋色
+    for(i=1;i<=5;i++)
+    {
+        if(y-i<0||x-i<0)
+            break;
+        if(colorLeft==0)
+            colorLeft=gameMapVec[x-i][y-i];
+        if(colorLeft!=0&&(colorLeft+gameMapVec[x-i][y-i]==0))
+            break;
+        if(gameMapVec[x-i][y-i]==-1)//白
+            whiteNum++;
+        else if(gameMapVec[x-i][y-i]==1)//黑
+            blackNum++;
+        else
+            emptyNum++;
+    }
+    for(j=1;j<=5;j++)
+    {
+        if(y+j>14||x+j>14)
+            break;
+        if(colorRight==0)
+            colorRight=gameMapVec[x+j][y+j];
+        if(colorRight!=0&&(colorRight+gameMapVec[x+j][y+j]==0))
+            break;
+        if(gameMapVec[x+j][y+j]==-1)//白
+            whiteNum++;
+        else if(gameMapVec[x+j][y+j]==1)//黑
+            blackNum++;
+        else
+            emptyNum++;
+    }
+
+    accumulate(i,j,blackNum,whiteNum,emptyNum,score);
+    return score;
 }
 //计算副对角线得分
 int GameState::calculateViceDiagonalScore(int x, int y)
 {
-    return 0;
+    int score=0;
+    int whiteNum=0,blackNum=0,emptyNum=0;
+    int i=0,j=0;
+    int colorLeft=0,colorRight=0;//棋色
+    for(i=1;i<=5;i++)
+    {
+        if(y+i>14||x-i<0)
+            break;
+        if(colorLeft==0)
+            colorLeft=gameMapVec[x-i][y+i];
+        if(colorLeft!=0&&(colorLeft+gameMapVec[x-i][y+i]==0))
+            break;
+        if(gameMapVec[x-i][y+i]==-1)//白
+            whiteNum++;
+        else if(gameMapVec[x-i][y+i]==1)//黑
+            blackNum++;
+        else
+            emptyNum++;
+    }
+    for(j=1;j<=5;j++)
+    {
+        if(y-j<0||x+j>14)
+            break;
+        if(colorRight==0)
+            colorRight=gameMapVec[x+j][y-j];
+        if(colorRight!=0&&(colorRight+gameMapVec[x+j][y-j]==0))
+            break;
+        if(gameMapVec[x+j][y-j]==-1)//白
+            whiteNum++;
+        else if(gameMapVec[x+j][y-j]==1)//黑
+            blackNum++;
+        else
+            emptyNum++;
+    }
+
+    accumulate(i,j,blackNum,whiteNum,emptyNum,score);
+    return score;
 }

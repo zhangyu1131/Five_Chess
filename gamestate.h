@@ -15,8 +15,7 @@ const int kAIDelay = 700; // AI下棋的思考时间
 enum GameModel{PVP,PVPONLINE,PVE};
 //游戏状态
 enum GameStatus{PLAYING,END,CLOSED};
-//pve中的分值数组，从前往后依次是死一，活一，死二，活二，死三……五连。
-std::vector<int> chessScore={4,20,90,400,800,6000,10000,20000,50000};
+
 
 class GameState
 {
@@ -25,11 +24,11 @@ public:
     GameState();
     void StartGame();
     bool isWin(int x,int y);
-    //计算每个点的评分，电脑根据评分高低落子
-    void calculateScore();
+    QPoint putChess(QPoint point);
+
 public:
     std::vector<std::vector<int>> gameMapVec; // 存储当前游戏棋盘和棋子的情况,空白为0，白子1，黑子-1
-    std::vector<std::vector<int>> scoreMapVec; // 存储各个点位的评分情况，作为AI下棋依据
+    std::vector<std::vector<int>> scoreMap; // 存储各个点位的评分情况，作为AI下棋依据
     bool playerFlag; // 标示下棋方
     GameModel gameModel; // 游戏模式
     GameStatus gameStatus; // 游戏状态
@@ -39,5 +38,9 @@ private:
     int calculateColScore(int x,int y);
     int calculateMainDiagonalScore(int x,int y);
     int calculateViceDiagonalScore(int x,int y);
+
+    void accumulate(int i,int j,int blackNum,int whiteNum,int emptyNum,int& score);
+    //计算每个点的评分，电脑根据评分高低落子
+    void calculateScore();
 };
 #endif // GAMESTATE_H

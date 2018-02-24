@@ -37,6 +37,9 @@ private slots:
     void initPVPOnlineGame();
     void initPVEGame();
 
+    void chessByAI();//电脑下棋
+    void chessByPerson();//人下棋
+
 private:
     void ConstructMenu();
 
@@ -51,6 +54,7 @@ private:
     GameState *game;
     //游戏模式
     GameModel game_model;
+
 };
 
 #endif // MAINWINDOW_H
