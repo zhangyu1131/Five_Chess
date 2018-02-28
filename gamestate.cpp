@@ -201,40 +201,97 @@ void GameState::accumulate(int i, int j, int blackNum, int whiteNum, int emptyNu
 {
     //pve中的分值数组，从前往后依次是死一，活一，死二，活二，死三……五连。
     //const std::vector<int> Scores={4,20,90,400,800,6000,10000,20000,50000};
-    if(i<=5||j<=5)//死
+    if(i<=loopSize||j<=loopSize)//死
     {
         if(blackNum==0) score+=2;//死一
         else if(blackNum==1)
             score+=60;//死二
-        else if(blackNum==2)
-            score+=500;//死三
-        else if(blackNum==3)
-            score+=8000;//死四
-        else if(blackNum>=4)
-            score+=40000;//五连
+        else if(blackNum==2)//死三
+        {
+            if(emptyNum==0)
+                score+=500;
+            else
+                score+=300;
+        }
+        else if(blackNum==3)//死四
+        {
+            if(emptyNum==0)
+                score+=8000;
+            else
+                score+=6000;
+        }
+        else if(blackNum>=4)//五连
+        {
+            if(emptyNum==0)
+                score+=40000;
+            else
+                score+=24000;
+        }
 
         if(whiteNum==0) score+=4;//死一
         else if(whiteNum==1)
             score+=90;//死二
-        else if(whiteNum==2)
-            score+=800;//死三
-        else if(whiteNum==3)
-            score+=10000;//死四
-        else if(whiteNum>=4)
-            score+=50000;//五连
+        else if(whiteNum==2)//死三
+        {
+            if(emptyNum==0)
+                score+=800;
+            else
+                score+=600;
+        }
+        else if(whiteNum==3)//死四
+        {
+            if(emptyNum==0)
+                score+=10000;
+            else
+                score+=6000;
+        }
+        else if(whiteNum>=4)//五连
+        {
+                score+=50000;
+        }
     }
     else//活
     {
         if(blackNum==0) score+=10;//活一
         else if(blackNum==1) score+=200;//活二
-        else if(blackNum==2) score+=2000;//活三
-        else if(blackNum==3) score+=16000;//活四
-        else if(blackNum>=4) score+=40000;//五连
+        else if(blackNum==2) //活三
+        {
+            if(emptyNum==0)
+                score+=2000;
+            else
+                score+=1300;
+        }
+        else if(blackNum==3) //活四
+        {
+            if(emptyNum==0)//没有空格
+                score+=16000;
+            else
+                score+=12000;
+        }
+        else if(blackNum>=4) //五连
+        {
+            if(emptyNum==0)
+                score+=40000;
+            else
+                score+=24000;
+        }
 
         if(whiteNum==0) score+=20;//活一
         else if(whiteNum==1) score+=400;//活二
-        else if(whiteNum==2) score+=6000;//活三
-        else if(whiteNum==3) score+=20000;//活四
+        else if(whiteNum==2) //活三
+        {
+            if(emptyNum==0)
+                score+=6000;
+            else
+                score+=4000;
+        }
+        else if(whiteNum==3) //活四
+        {
+            if(emptyNum==0)
+                score+=20000;
+            else
+                score+=12000;
+        }
         else if(whiteNum>=4) score+=50000;//五连
     }
 }
@@ -245,38 +302,40 @@ int GameState::calculateRowScore(int x, int y)
     int whiteNum=0,blackNum=0,emptyNum=0;
     int i=0,j=0;
     int colorLeft=0,colorRight=0;//棋色
-    for(i=1;i<=5;i++)//先往左检查
+    for(i=1;i<=loopSize;i++)//先往左检查
     {
         if(x-i<0)
             break;
         //首先将该点左侧的棋子颜色存入color
-        if(colorLeft==0)
+        if(colorLeft==0&&gameMapVec[x-i][y]!=0)
+        {
             colorLeft=gameMapVec[x-i][y];
+            emptyNum+=i-1;
+        }
         if(colorLeft!=0&&(colorLeft+gameMapVec[x-i][y]==0))//若颜色不为空，且与当前检查棋子颜色不同，说明出现了阻拦，再往左已经没有意义
             break;
         if(gameMapVec[x-i][y]==-1)//白
             whiteNum++;
         else if(gameMapVec[x-i][y]==1)//黑
             blackNum++;
-        else
-            emptyNum++;
     }
     //往右检查
-    for(j=1;j<=5;j++)
+    for(j=1;j<=loopSize;j++)
     {
         if(x+j>14)
             break;
         //首先将该点右侧的棋子颜色存入color
-        if(colorRight==0)
+        if(colorRight==0&&gameMapVec[x+j][y]!=0)
+        {
             colorRight=gameMapVec[x+j][y];
+            emptyNum+=j-1;
+        }
         if(colorRight!=0&&(colorRight+gameMapVec[x+j][y]==0))//若颜色不为空，且与当前检查棋子颜色不同，说明出现了阻拦，再往左已经没有意义
             break;
         if(gameMapVec[x+j][y]==-1)//白
             whiteNum++;
         else if(gameMapVec[x+j][y]==1)//黑
             blackNum++;
-        else
-            emptyNum++;
     }
 
     accumulate(i,j,blackNum,whiteNum,emptyNum,score);
@@ -289,35 +348,37 @@ int GameState::calculateColScore(int x, int y)
     int whiteNum=0,blackNum=0,emptyNum=0;
     int i=0,j=0;
     int colorLeft=0,colorRight=0;//棋色
-    for(i=1;i<=5;i++)
+    for(i=1;i<=loopSize;i++)
     {
         if(y-i<0)
             break;
-        if(colorLeft==0)
+        if(colorLeft==0&&gameMapVec[x][y-i]!=0)
+        {
             colorLeft=gameMapVec[x][y-i];
+            emptyNum+=i-1;
+        }
         if(colorLeft!=0&&(colorLeft+gameMapVec[x][y-i]==0))
             break;
         if(gameMapVec[x][y-i]==-1)//白
             whiteNum++;
         else if(gameMapVec[x][y-i]==1)//黑
             blackNum++;
-        else
-            emptyNum++;
     }
-    for(j=1;j<=5;j++)
+    for(j=1;j<=loopSize;j++)
     {
         if(y+j>14)
             break;
-        if(colorRight==0)
+        if(colorRight==0&&gameMapVec[x][y+j]!=0)
+        {
             colorRight=gameMapVec[x][y+j];
+            emptyNum+=j-1;
+        }
         if(colorRight!=0&&(colorRight+gameMapVec[x][y+j]==0))
             break;
         if(gameMapVec[x][y+j]==-1)//白
             whiteNum++;
         else if(gameMapVec[x][y+j]==1)//黑
             blackNum++;
-        else
-            emptyNum++;
     }
 
     accumulate(i,j,blackNum,whiteNum,emptyNum,score);
@@ -330,35 +391,37 @@ int GameState::calculateMainDiagonalScore(int x, int y)
     int whiteNum=0,blackNum=0,emptyNum=0;
     int i=0,j=0;
     int colorLeft=0,colorRight=0;//棋色
-    for(i=1;i<=5;i++)
+    for(i=1;i<=loopSize;i++)
     {
         if(y-i<0||x-i<0)
             break;
-        if(colorLeft==0)
+        if(colorLeft==0&&gameMapVec[x-i][y-i]!=0)
+        {
             colorLeft=gameMapVec[x-i][y-i];
+            emptyNum+=i-1;
+        }
         if(colorLeft!=0&&(colorLeft+gameMapVec[x-i][y-i]==0))
             break;
         if(gameMapVec[x-i][y-i]==-1)//白
             whiteNum++;
         else if(gameMapVec[x-i][y-i]==1)//黑
             blackNum++;
-        else
-            emptyNum++;
     }
-    for(j=1;j<=5;j++)
+    for(j=1;j<=loopSize;j++)
     {
         if(y+j>14||x+j>14)
             break;
-        if(colorRight==0)
+        if(colorRight==0&&gameMapVec[x+j][y+j]!=0)
+        {
             colorRight=gameMapVec[x+j][y+j];
+            emptyNum+=j-1;
+        }
         if(colorRight!=0&&(colorRight+gameMapVec[x+j][y+j]==0))
             break;
         if(gameMapVec[x+j][y+j]==-1)//白
             whiteNum++;
         else if(gameMapVec[x+j][y+j]==1)//黑
             blackNum++;
-        else
-            emptyNum++;
     }
 
     accumulate(i,j,blackNum,whiteNum,emptyNum,score);
@@ -371,35 +434,37 @@ int GameState::calculateViceDiagonalScore(int x, int y)
     int whiteNum=0,blackNum=0,emptyNum=0;
     int i=0,j=0;
     int colorLeft=0,colorRight=0;//棋色
-    for(i=1;i<=5;i++)
+    for(i=1;i<=loopSize;i++)
     {
         if(y+i>14||x-i<0)
             break;
-        if(colorLeft==0)
+        if(colorLeft==0&&gameMapVec[x-i][y+i]!=0)
+        {
             colorLeft=gameMapVec[x-i][y+i];
+            emptyNum+=i-1;
+        }
         if(colorLeft!=0&&(colorLeft+gameMapVec[x-i][y+i]==0))
             break;
         if(gameMapVec[x-i][y+i]==-1)//白
             whiteNum++;
         else if(gameMapVec[x-i][y+i]==1)//黑
             blackNum++;
-        else
-            emptyNum++;
     }
-    for(j=1;j<=5;j++)
+    for(j=1;j<=loopSize;j++)
     {
         if(y-j<0||x+j>14)
             break;
-        if(colorRight==0)
+        if(colorRight==0&&gameMapVec[x+j][y-j]!=0)
+        {
             colorRight=gameMapVec[x+j][y-j];
+            emptyNum+=j-1;
+        }
         if(colorRight!=0&&(colorRight+gameMapVec[x+j][y-j]==0))
             break;
         if(gameMapVec[x+j][y-j]==-1)//白
             whiteNum++;
         else if(gameMapVec[x+j][y-j]==1)//黑
             blackNum++;
-        else
-            emptyNum++;
     }
 
     accumulate(i,j,blackNum,whiteNum,emptyNum,score);

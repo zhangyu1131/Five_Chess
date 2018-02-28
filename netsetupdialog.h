@@ -6,6 +6,7 @@
 #include <QtNetwork>
 #include"mytcpsocket.h"
 #include"mytcpclient.h"
+#include "gamestate.h"
 
 namespace Ui {
 class NetSetupDialog;
@@ -16,9 +17,9 @@ class NetSetupDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit NetSetupDialog(QWidget *parent = 0);
+    explicit NetSetupDialog(GameState*& game, QWidget *parent = 0);
     ~NetSetupDialog();
-
+    void getChessInfo(int x,int y);
 private slots:
     void on_OK_clicked();
 
@@ -26,18 +27,24 @@ private slots:
 
     void on_HOSTORCLIENT_clicked();
 
-    void sendMessage();
-    void readMessage();
-    void displayError(QAbstractSocket::SocketError);
+    //void sendMessage();
+    void readMessage_Client();
+    void displayError_Client(QAbstractSocket::SocketError);
+    void startPVPOnlineGame();
 
 private:
+    GameState* game;
     Ui::NetSetupDialog *ui;
-    //单选按钮组
-    QButtonGroup * hostOrClient;
     //tcpserver
     myTCPSocket* tcpServer;
     //tcpclient
     myTCPClient* tcpclient;
+public:
+    bool pvpOnlineGameStatus;
+    //单选按钮组
+    QButtonGroup * hostOrClient;
+    //下棋轮次标志
+    bool chessFlag;
 };
 
 #endif // NETSETUPDIALOG_H

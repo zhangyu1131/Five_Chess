@@ -10,6 +10,7 @@ const int kMarkSize = 6; // 落子标记边长
 const int kBlockSize = 40; // 格子边长
 const int kPosDelta = 20; // 鼠标点击的模糊距离上限
 const int kAIDelay = 700; // AI下棋的思考时间
+const int loopSize=4;
 
 //游戏模式，默认情况下是普通PVP模式
 enum GameModel{PVP,PVPONLINE,PVE};

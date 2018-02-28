@@ -10,11 +10,15 @@ public:
     ~myTCPSocket(){}
     //QString getHostName();
     //quint16 getPort();
+    QString getMsg(){return msg;}
 public slots:
    bool newConnect();
    void myClose();
-   void sendMessage();
+   void sendMessage(QString msg);
+   void readMessage();
+   void startPVPOnlineGame();
 private:
+   QString msg;
    //QString localHostName;
    //quint16 port;
 };

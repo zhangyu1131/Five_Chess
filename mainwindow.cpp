@@ -24,9 +24,8 @@ MainWindow::MainWindow(QWidget *parent) :
     //手动添加菜单
     ConstructMenu();
 
-    //ui->setupUi(this);
-
     game=new GameState();
+    game->gameStatus=CLOSED;
     initPVPGame();
 }
 
@@ -41,6 +40,7 @@ MainWindow::~MainWindow()
 void MainWindow::initPVPGame()
 {
     game->gameModel=PVP;
+    game->gameStatus=CLOSED;
     game->StartGame();
     qDebug()<<"init pvp";
     update();
@@ -48,12 +48,13 @@ void MainWindow::initPVPGame()
 void MainWindow::initPVPOnlineGame()
 {
     qDebug()<<"PVP online triggered";
-    netsetupdialog=new NetSetupDialog();
+    netsetupdialog=new NetSetupDialog(game);
     netsetupdialog->setModal(true);
     netsetupdialog->setWindowFlags(windowFlags()&~Qt::WindowMaximizeButtonHint);    // 禁止最大化按钮
     netsetupdialog->setFixedSize(400,300);
     netsetupdialog->show();
 
+    game->gameStatus=CLOSED;
     game->gameModel=PVPONLINE;
     game->StartGame();
     qDebug()<<"init pvponline";
@@ -62,6 +63,7 @@ void MainWindow::initPVPOnlineGame()
 void MainWindow::initPVEGame()
 {
     game->gameModel=PVE;
+    game->gameStatus=CLOSED;
     game->StartGame();
     qDebug()<<"init pve";
     update();
@@ -112,12 +114,17 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
         chessByPerson();
         chessByPerson();
     }
-    if(game->gameModel==PVE)
+    else if(game->gameModel==PVE)
     {
         if(game->playerFlag)
             chessByPerson();
         if(!game->isWin(chessPoint.x(),chessPoint.y()))
             QTimer::singleShot(700, this, SLOT(chessByAI()));
+    }
+    else if(game->gameModel==PVPONLINE)
+    {
+        chessByPerson();
+        //chessByPerson();
     }
     update();
 }
@@ -205,15 +212,29 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
 void MainWindow::chessByPerson()
 {
-    if(game->playerFlag&&game->gameMapVec[chessPoint.x()][chessPoint.y()]==0)
+    if(game->gameModel!=PVPONLINE)
     {
-        game->gameMapVec[chessPoint.x()][chessPoint.y()]=1;//黑棋
-        game->playerFlag=!game->playerFlag;
+        if(game->playerFlag&&game->gameMapVec[chessPoint.x()][chessPoint.y()]==0)
+        {
+            game->gameMapVec[chessPoint.x()][chessPoint.y()]=1;//黑棋
+            game->playerFlag=!game->playerFlag;
+        }
+        else if(!game->playerFlag&&game->gameMapVec[chessPoint.x()][chessPoint.y()]==0)
+        {
+            game->gameMapVec[chessPoint.x()][chessPoint.y()]=-1;//白棋
+            game->playerFlag=!game->playerFlag;
+        }
     }
-    else if(!game->playerFlag&&game->gameMapVec[chessPoint.x()][chessPoint.y()]==0)
+    else//pvp online 模式，操作与其他两种模式不同
     {
-        game->gameMapVec[chessPoint.x()][chessPoint.y()]=-1;//白棋
-        game->playerFlag=!game->playerFlag;
+        if(netsetupdialog->pvpOnlineGameStatus&&netsetupdialog->chessFlag)
+        {
+            if(netsetupdialog->hostOrClient->checkedId()==0&&game->gameMapVec[chessPoint.x()][chessPoint.y()]==0)//host 黑棋
+                game->gameMapVec[chessPoint.x()][chessPoint.y()]=1;
+            else if(netsetupdialog->hostOrClient->checkedId()==1&&game->gameMapVec[chessPoint.x()][chessPoint.y()]==0)
+                game->gameMapVec[chessPoint.x()][chessPoint.y()]=-1;//白棋
+            netsetupdialog->getChessInfo(chessPoint.x(),chessPoint.y());
+        }
     }
     update();
 }

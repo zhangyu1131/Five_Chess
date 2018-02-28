@@ -18,7 +18,9 @@ public slots:
    void newConnect();
    //void myClose();
    void readMessage();
+   void sendMessage(QString msg);
    void displayError(QAbstractSocket::SocketError);
+   void startPVPOnlineGame();
 private:
    //QString localHostName;
    //quint16 port;

@@ -3,9 +3,9 @@
 #include<QDebug>
 #include<QMessageBox>
 
-NetSetupDialog::NetSetupDialog(QWidget *parent) :
+NetSetupDialog::NetSetupDialog(GameState*& game,QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::NetSetupDialog)
+    ui(new Ui::NetSetupDialog),pvpOnlineGameStatus(false),game(game)
 {
     ui->setupUi(this);
     //将主机和客户机两个单选框加入同一个组中
@@ -34,6 +34,7 @@ NetSetupDialog::~NetSetupDialog()
 void NetSetupDialog::on_OK_clicked()
 {
     qDebug()<< "in ok button";
+    QMessageBox::StandardButton btnValue;
     if(hostOrClient->checkedId()==0)//host
     {
         qDebug()<<"host";
@@ -42,18 +43,32 @@ void NetSetupDialog::on_OK_clicked()
         if(!tcpServer->listen(QHostAddress::LocalHost,5005))
         {
             qDebug()<<tcpServer->errorString();
+            QMessageBox::information(NULL, "server", "listen error");
             close();
         }
-        connect(tcpServer,SIGNAL(newConnection()),this,SLOT(sendMessage()));
+        else
+            btnValue=QMessageBox::information(NULL, "server", "choose host and listen successfully!");
+
+        if (btnValue == QMessageBox::Ok)
+            this->close();
+        chessFlag=true;
+        connect(tcpServer,SIGNAL(newConnection()),this,SLOT(startPVPOnlineGame()));
     }
     else if(hostOrClient->checkedId()==1)//client
     {
         qDebug()<<"client";
         tcpclient=new myTCPClient(this);
-        connect(tcpclient,SIGNAL(readyRead()),this,SLOT(readMessage()));
-        connect(tcpclient,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(displayError(QAbstractSocket::SocketError)));
+        connect(tcpclient,SIGNAL(readyRead()),this,SLOT(readMessage_Client()));
+        connect(tcpclient,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(displayError_Client(QAbstractSocket::SocketError)));
+
+        btnValue=QMessageBox::information(NULL, "client", "choose client successfully!");
+        if (btnValue == QMessageBox::Ok)
+            this->close();
+
+        chessFlag=false;
         //发起连接
         tcpclient->newConnect();
+        pvpOnlineGameStatus=true;
     }
 }
 //取消响应函数
@@ -75,18 +90,53 @@ void NetSetupDialog::on_HOSTORCLIENT_clicked()
 
 }
 
-void NetSetupDialog::sendMessage()
+/*void NetSetupDialog::sendMessage()
 {
     tcpServer->sendMessage();
-}
+}*/
 
-void NetSetupDialog::readMessage()
+void NetSetupDialog::readMessage_Client()
 {
     tcpclient->readMessage();
+    QString msg=tcpclient->getMsg();
+    int color=0,x=0,y=0;
+    int i=0;
+    for(;i<msg.size();i++)
+        if(i=='$')
+            break;
+    QStringList msgs=msg.split('$');
+    color=msgs[0].toInt();
+    x=msgs[1].toInt();
+    y=msgs[2].toInt();
+    if(color==1)
+        game->gameMapVec[x][y]=1;
+    chessFlag=!chessFlag;
+    update();
 }
 
+void NetSetupDialog::startPVPOnlineGame()
+{
+    tcpServer->startPVPOnlineGame();
+    pvpOnlineGameStatus=true;
+}
 
-void NetSetupDialog::displayError(QAbstractSocket::SocketError)
+void NetSetupDialog::displayError_Client(QAbstractSocket::SocketError)
 {
     tcpclient->displayError(QAbstractSocket::SocketError());
+}
+
+//获得落子信息，组装成包发送出去
+void NetSetupDialog::getChessInfo(int x, int y)
+{
+    if(hostOrClient->checkedId()==0)//host，黑棋发送消息
+    {
+        QString msg="1$"+QString::number(x,10)+"$"+QString::number(y,10);
+        chessFlag=!chessFlag;
+        tcpServer->sendMessage(msg);
+    }
+    else if(hostOrClient->checkedId()==1)//client，白棋发送消息
+    {
+        QString msg="2$"+QString::number(x,10)+"$"+QString::number(y,10);
+        chessFlag=!chessFlag;
+    }
 }
