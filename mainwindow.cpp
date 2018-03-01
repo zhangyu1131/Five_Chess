@@ -39,6 +39,8 @@ MainWindow::~MainWindow()
 //游戏模式选择
 void MainWindow::initPVPGame()
 {
+    if(game->gameModel==PVPONLINE&&game->gameStatus==PLAYING)
+        netsetupdialog->closeConnection();
     game->gameModel=PVP;
     game->gameStatus=CLOSED;
     game->StartGame();
@@ -57,11 +59,17 @@ void MainWindow::initPVPOnlineGame()
     game->gameStatus=CLOSED;
     game->gameModel=PVPONLINE;
     game->StartGame();
+    if(netsetupdialog->black)
+        netsetupdialog->chessFlag=true;
+    else
+        netsetupdialog->chessFlag=false;
     qDebug()<<"init pvponline";
     update();
 }
 void MainWindow::initPVEGame()
 {
+    if(game->gameModel==PVPONLINE&&game->gameStatus==PLAYING)
+        netsetupdialog->closeConnection();
     game->gameModel=PVE;
     game->gameStatus=CLOSED;
     game->StartGame();
@@ -79,6 +87,8 @@ void MainWindow::on_DRAW_GAME_MENU_triggered()
 void MainWindow::on_EXIT_GAME_MENU_triggered()
 {
      qDebug()<<"in exit game triggered";
+     if(game->gameModel==PVPONLINE)
+         netsetupdialog->closeConnection();
      this->close();
 }
 
@@ -107,30 +117,32 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 
 }
 
-void MainWindow::mouseReleaseEvent(QMouseEvent *event)
+void MainWindow::mouseReleaseEvent(QMouseEvent *)
 {
-    if(game->gameModel==PVP)
+    if(game->gameStatus==PLAYING)
     {
-        chessByPerson();
-        chessByPerson();
-    }
-    else if(game->gameModel==PVE)
-    {
-        if(game->playerFlag)
+        if(game->gameModel==PVP)
+        {
             chessByPerson();
-        if(!game->isWin(chessPoint.x(),chessPoint.y()))
-            QTimer::singleShot(700, this, SLOT(chessByAI()));
-    }
-    else if(game->gameModel==PVPONLINE)
-    {
-        chessByPerson();
-        //chessByPerson();
+            chessByPerson();
+        }
+        else if(game->gameModel==PVE)
+        {
+            if(game->playerFlag)
+                chessByPerson();
+            if(!game->isWin(chessPoint.x(),chessPoint.y()))
+                QTimer::singleShot(700, this, SLOT(chessByAI()));
+        }
+        else if(game->gameModel==PVPONLINE)
+        {
+            chessByPerson();
+        }
     }
     update();
 }
 
 //绘制界面函数
-void MainWindow::paintEvent(QPaintEvent *event)
+void MainWindow::paintEvent(QPaintEvent *)
 {
    // qDebug()<<"in paintEvent";
 
@@ -204,6 +216,16 @@ void MainWindow::paintEvent(QPaintEvent *event)
                     initPVPGame();
                 else if(game->gameModel==PVE)
                     initPVEGame();
+                else if(game->gameModel==PVPONLINE)
+                {
+                    //清空上一局棋盘
+                    game->clearMap();
+                    game->gameStatus=PLAYING;
+                    if(netsetupdialog->getSide())//黑
+                        netsetupdialog->chessFlag=true;
+                    else
+                        netsetupdialog->chessFlag=false;
+                }
             }
         }
     }

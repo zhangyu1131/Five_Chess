@@ -19,11 +19,7 @@ GameState::GameState()
 void GameState::StartGame()
 {
     //清空上一局棋盘
-    for (int i = 0; i < 15; i++)
-    {
-        for (int j = 0; j < 15; j++)
-            gameMapVec[i][j]=0;
-    }
+    clearMap();
     gameStatus=PLAYING;
     playerFlag=true;
     qDebug()<<"start game!";
@@ -39,6 +35,15 @@ void GameState::StartGame()
              scoreMap.push_back(lineScores);
        }
    }
+}
+
+void GameState::clearMap()
+{
+    for (int i = 0; i < 15; i++)
+    {
+        for (int j = 0; j < 15; j++)
+            gameMapVec[i][j]=0;
+    }
 }
 
 //落子后判断是否胜利，即游戏结束
