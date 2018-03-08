@@ -87,8 +87,8 @@ void MainWindow::on_DRAW_GAME_MENU_triggered()
 void MainWindow::on_EXIT_GAME_MENU_triggered()
 {
      qDebug()<<"in exit game triggered";
-     if(game->gameModel==PVPONLINE)
-         netsetupdialog->closeConnection();
+     //if(game->gameModel==PVPONLINE)
+         //netsetupdialog->closeConnection();
      this->close();
 }
 

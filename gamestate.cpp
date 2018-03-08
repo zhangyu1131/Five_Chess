@@ -252,7 +252,10 @@ void GameState::accumulate(int i, int j, int blackNum, int whiteNum, int emptyNu
         }
         else if(whiteNum>=4)//五连
         {
+            if(emptyNum==0)
                 score+=50000;
+            else
+                score+=30000;
         }
     }
     else//活
@@ -295,7 +298,7 @@ void GameState::accumulate(int i, int j, int blackNum, int whiteNum, int emptyNu
             if(emptyNum==0)
                 score+=20000;
             else
-                score+=12000;
+                score+=16000;
         }
         else if(whiteNum>=4) score+=50000;//五连
     }
